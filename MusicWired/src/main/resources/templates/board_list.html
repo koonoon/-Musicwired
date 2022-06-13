@@ -16,7 +16,14 @@ table, tr, td, th {
 	text-align: center;
 }
 </style>
+
 </head>
+
+<script th:if="${session.login eq null}">
+	alert('로그인 이후 이용해주세요');
+	location.href="memberLogin";
+</script>
+
 <body>
 
 	<!-- <table>
@@ -50,10 +57,17 @@ table, tr, td, th {
 </body>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 
-<script type="text/javascript">
+<script type="text/javascript" th:inline="javascript">
+
+	var CheckLogin = [[${session.login}]]
 	
+	if(CheckLogin != null){
+		var sessionId = [[${session.login.mId}]]
+	}
+	
+	console.log('sessionId = ' + sessionId);
+
 	$(document).ready(function(){
-		
 		
 		$.ajax({
 			type : "POST",
@@ -83,8 +97,13 @@ table, tr, td, th {
 				output += "<td>" + list[i].boContent + "</td>";
 				output += "<td><img src='/ImageUpload/"+ list[i].boImage + "' style='width: 200px;'></td>";
 				output += "<td id='"+ list[i].boCode +"' class='heartUp'><img src='/heart/heart1.png' style='width: 25px;'/><span>" + list[i].boLike + "</span></td>"
-				output += "<td><a href='boardModiForm?boCode="+list[i].boCode +"'>수정</a></td>";
-				output += "<td><a href='boardDelete?boCode="+list[i].boCode +"'>삭제</a></td>";
+				if(sessionId == list[i].boWriter){
+					output += "<td><a href='boardModiForm?boCode="+list[i].boCode +"'>수정</a></td>"
+					output += "<td><a href='boardDelete?boCode="+list[i].boCode +"'>삭제</a></td>";
+				} else{
+					output += "<td></td>"
+					output += "<td></td>"
+				}
 				output += "</tr>";
 			}
 			
@@ -106,13 +125,28 @@ table, tr, td, th {
 				$.ajax({
 					type : "POST",
 					url : "boLikeUp",
-					data : {"boCode" : boCode},
+					data : {"boCode" : boCode,},
 					dataType : "json",
 					success : function(list){
 						LikePlus(list);
 						/* $(this).attr("class","heartDown"); */
 						/* document.getElementById(boCode).classList.remove('heartUp'); */
 						/* document.getElementById(boCode).className='heartDown'; */
+						
+						$.ajax({
+							type : "POST",
+							url : "boLikeInsert",
+							data : {"bolBoCode" : boCode,
+									"bolMid" : sessionId},
+							dataType : "json",
+							success : function(list){
+								
+							},
+							error : function(){
+								alert('좋아요 테이블 등록 실패');
+							}
+						});
+						
 					},
 					error : function(){
 						alert('좋아요 증가 실패');

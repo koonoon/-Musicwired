@@ -9,6 +9,12 @@
     <meta name="date" content="">
     <title></title>
 </head>
+
+<script th:if="${session.login eq null}">
+	alert('로그인 이후 이용해주세요');
+	location.href="memberLogin";
+</script>
+
 <body>
 
 	<form action="boardUpload" method="POST" enctype="multipart/form-data">
@@ -17,7 +23,7 @@
 
 			<tr>
 				<th>작성자</th>
-				<td><input type="text" name="boWriter" /></td>
+				<td th:if="${session.login ne null}"><input type="hidden" name="boWriter" th:inline="text" th:value="${session.login.mId}" th:text="${session.login.mId}"/></td>
 			</tr>
 
 			<tr>
